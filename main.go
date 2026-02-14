@@ -1,5 +1,6 @@
 package main
+import "bankapp/app"
 
 func main() {
-	app()
+	app.App()
 }

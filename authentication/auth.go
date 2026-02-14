@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	_ "modernc.org/sqlite"
-	"bankapp/app"
+	"bankapp/models"
 	"bankapp/validators"
 
 )
 
-func SignUp(db *sql.DB, user app.User) bool {
+func SignUp(db *sql.DB, user models.User) bool {
 	msg, ok :=  validateUser(db, user)
 	if !ok {
 		fmt.Println(msg)
@@ -19,7 +19,7 @@ func SignUp(db *sql.DB, user app.User) bool {
 	return true
 }
 
-func validateUser(db *sql.DB, user app.User) (string, bool) {
+func validateUser(db *sql.DB, user models.User) (string, bool) {
 	var msg string
 	userExists, err := UserExists(db, user.Email)
 	if err != nil {
@@ -63,7 +63,7 @@ func UserExists(db *sql.DB, email string) (bool, error) {
 		if err == sql.ErrNoRows{
 			return false, nil
 		}
-		return false, nil
+		return false, err
 	}
 	return true, nil
 }
