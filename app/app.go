@@ -19,6 +19,7 @@ func App() {
 	for {
 		fmt.Println("Bem-vindo ao GoBank")
 		fmt.Println("1 - Criar usuário")
+		fmt.Println("2 - Sair")
 
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
@@ -67,6 +68,9 @@ func App() {
 		}
 		methods.InsertUser(db, user)
 		fmt.Printf("Usuário %s criado com sucesso, seja bem-vindo ao GoBank \n", user.Email)
+		}else if choice == 2 {
+			fmt.Println("Até mais, obrigado por usar o GoBank")
+			break
 		}
 	}
 }

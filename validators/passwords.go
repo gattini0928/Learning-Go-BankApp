@@ -2,7 +2,6 @@ package validators
 
 import (
 	"fmt"
-	"strings"
 	"unicode"
 )
 
@@ -18,7 +17,7 @@ func ValidatePassword(password string) (string, bool) {
 	}
 	for ruleName, ruleFunc := range rules {
 		found := false
-		for _, char : range password {
+		for _, char := range password {
 			if ruleFunc(char) {
 				found = true
 				break
