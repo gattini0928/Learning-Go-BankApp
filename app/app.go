@@ -1,20 +1,20 @@
 package app
 
 import (
-	"bankapp/models"
-	"bankapp/databases"
 	"bankapp/authentication"
+	"bankapp/database"
 	"bankapp/methods"
+	"bankapp/models"
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 func App() {
 	reader := bufio.NewReader(os.Stdin)
-	db := databases.StarDB()
+	db := database.StartDB()
 	defer db.Close()
 	for {
 		fmt.Println("Bem-vindo ao GoBank")
@@ -30,45 +30,45 @@ func App() {
 		}
 
 		if choice == 1 {
-		fmt.Print("Nome Completo: ")
-		name, _ := reader.ReadString('\n')
-		name = strings.TrimSpace(name)
+			fmt.Print("Nome Completo: ")
+			name, _ := reader.ReadString('\n')
+			name = strings.TrimSpace(name)
 
-		fmt.Print("Seu E-mail: ")
-		email, _ := reader.ReadString('\n')
-		email = strings.TrimSpace(email)
+			fmt.Print("Seu E-mail: ")
+			email, _ := reader.ReadString('\n')
+			email = strings.TrimSpace(email)
 
-		fmt.Print("Seu CPF: ")
-		cpf, _ := reader.ReadString('\n')
-		cpf = strings.TrimSpace(cpf)
+			fmt.Print("Seu CPF: ")
+			cpf, _ := reader.ReadString('\n')
+			cpf = strings.TrimSpace(cpf)
 
-		fmt.Print("Senha: ")
-		password, _ := reader.ReadString('\n')
-		password = strings.TrimSpace(password)
+			fmt.Print("Senha: ")
+			password, _ := reader.ReadString('\n')
+			password = strings.TrimSpace(password)
 
-		fmt.Print("Confirme sua senha: ")
-		confirmPassword, _ := reader.ReadString('\n')
-		confirmPassword = strings.TrimSpace(confirmPassword)
+			fmt.Print("Confirme sua senha: ")
+			confirmPassword, _ := reader.ReadString('\n')
+			confirmPassword = strings.TrimSpace(confirmPassword)
 
-		if confirmPassword != password {
-			fmt.Println("As senhas não coincidem")
-			continue
-		}
-		
-		user := models.User{
-			Name: name, 
-			Email:email, 
-			Cpf:cpf, 
-			Password: password}
+			if confirmPassword != password {
+				fmt.Println("As senhas não coincidem")
+				continue
+			}
 
-		signup := authentication.SignUp(db,  user)
-		if !signup {
-			fmt.Println("Falha ao criar usuário")
-			continue
-		}
-		methods.InsertUser(db, user)
-		fmt.Printf("Usuário %s criado com sucesso, seja bem-vindo ao GoBank \n", user.Email)
-		}else if choice == 2 {
+			user := models.User{
+				Name:     name,
+				Email:    email,
+				Cpf:      cpf,
+				Password: password}
+
+			signup := authentication.SignUp(db, user)
+			if !signup {
+				fmt.Println("Falha ao criar usuário")
+				continue
+			}
+			methods.InsertUser(db, user)
+			fmt.Printf("Usuário %s criado com sucesso, seja bem-vindo ao GoBank \n", user.Email)
+		} else if choice == 2 {
 			fmt.Println("Até mais, obrigado por usar o GoBank")
 			break
 		}
