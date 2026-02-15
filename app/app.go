@@ -14,7 +14,7 @@ import (
 
 func App() {
 	reader := bufio.NewReader(os.Stdin)
-	db := databases.ManagerDB()
+	db := databases.StarDB()
 	defer db.Close()
 	for {
 		fmt.Println("Bem-vindo ao GoBank")
