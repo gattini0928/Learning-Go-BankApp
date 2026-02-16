@@ -46,9 +46,13 @@ func TestValidateName(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			gotMsg, gotOk := validators.ValidateName(tt.input)
-			if gotMsg != tt.wantMsg || gotOk != tt.wantOk {
-				t.Fatalf("Esperava msg: %v, esperava ok: %v, mas recebeu msg: %v, ok: %v",
-					tt.wantMsg, tt.wantOk, gotMsg, gotOk)
+			if gotMsg != tt.wantMsg {
+				t.Fatalf("Esperava msg: %v,  mas recebeu msg: %v",
+					tt.wantMsg, gotMsg)
+			}
+			if gotOk != tt.wantOk {
+				t.Fatalf("Esperava ok: %v, recebeu ok: %v",
+					tt.wantOk, gotOk)
 			}
 		})
 	}
