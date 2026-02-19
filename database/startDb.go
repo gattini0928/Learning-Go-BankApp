@@ -9,7 +9,7 @@ import (
 )
 
 func StartDB() *sql.DB {
-	db, err := sql.Open("sqlite", "accounts.db")
+	db, err := sql.Open("sqlite", "bank.db")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -21,12 +21,48 @@ func StartDB() *sql.DB {
 			email TEXT,
 			cpf TEXT,
 			password TEXT);
+
+		CREATE TABLE IF NOT EXISTS accounts (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id     INTEGER,
+            level       TEXT,
+            balance     REAL,
+            card_name   TEXT,
+            card_number TEXT,
+            card_cvv    TEXT,
+            card_expiry TEXT,
+            card_limit  REAL,
+			invoice_due_date TEXT,
+			invoice_total REAL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+
+		CREATE TABLE IF NOT EXISTS bank_transactions (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			account_id INTEGER,
+			from_user INTEGER,
+			to_user INTEGER,
+			amount REAL,
+			date TEXT,
+			FOREIGN KEY (account_id) REFERENCES accounts(id)
+		)
+
+		CREATE TABLE IF NOT EXISTS credit_transactions (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			account_id INTEGER,
+			from_user INTEGER,
+			to_user INTEGER,
+			amount REAL,
+			date TEXT,
+			FOREIGN KEY (account_id) REFERENCES accounts(id)
+		)
 	`)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 	
-	fmt.Println("Database de accounts criado com sucesso!")
+	fmt.Println("Database de bank criado com sucesso!")
 	return db
 }
 

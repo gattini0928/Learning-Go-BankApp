@@ -1,5 +1,10 @@
 package models
 
+import (
+	"bankapp/generators"
+	"time"
+)
+
 type AccountLevel string
 
 const (
@@ -21,15 +26,75 @@ var AccountPrices = map[AccountLevel]int {
 }
 
 type User struct {
-	id int
+	Id int
 	Name string
 	Email string
 	Cpf string
 	Password string
 }
 
+type CreditCard struct {
+	HolderName string
+	CardNumber string
+	Cvv string
+	ExpiryDate string
+	Limit float64
+}
+
+type NormalTransaction struct {
+	From int
+	To int
+	Amount float64
+	Date time.Time
+}
+
+type BankTransactions struct {
+	Transactions []NormalTransaction
+}
+
+type CreditCardTransaction struct {
+    From   int
+    To     int
+    Amount float64
+    Date   time.Time
+}
+
+type Invoice struct {
+	Transactions []CreditCardTransaction
+	Total float64
+	DueDate time.Time
+}
+
 type Account struct {
 	AccountUser User
 	Level AccountLevel
-	CreditCard string
+	CreditCard CreditCard
+	Transactions BankTransactions
+	Invoice Invoice
+	Balance float64
+}
+
+func NewAccount(user User) Account {
+	name, number, cvv, date := generators.GenerateCreditCard(user.Name)
+	creditCard := CreditCard{HolderName:name, 
+		CardNumber: 
+		number, 
+		Cvv: cvv, 
+		ExpiryDate: date,
+		Limit: 400.00,
+	}
+	return Account {
+		AccountUser: user,
+		Level: Bronze,
+		CreditCard: creditCard,
+		Transactions: BankTransactions{
+			Transactions: []NormalTransaction{},
+		},
+		Invoice: Invoice {
+			Transactions: []CreditCardTransaction{},
+            Total:        0,
+            DueDate:      time.Now().AddDate(0, 1, 0),
+		},
+		Balance: 200,
+	}
 }

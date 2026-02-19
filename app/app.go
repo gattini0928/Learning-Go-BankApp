@@ -61,13 +61,17 @@ func App() {
 				Cpf:      cpf,
 				Password: password}
 
+			account := models.NewAccount(user)
+
 			signup := authentication.SignUp(db, user)
 			if !signup {
 				fmt.Println("Falha ao criar usuário")
 				continue
 			}
-			methods.InsertUser(db, user)
+
+			methods.InsertAccount(db, account)
 			fmt.Printf("Usuário %s criado com sucesso, seja bem-vindo ao GoBank \n", user.Email)
+			
 		} else if choice == 2 {
 			fmt.Println("Até mais, obrigado por usar o GoBank")
 			break
