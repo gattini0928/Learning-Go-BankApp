@@ -25,6 +25,7 @@ func StartDB() *sql.DB {
 		CREATE TABLE IF NOT EXISTS accounts (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id     INTEGER,
+			account_password    TEXT,
             level       TEXT,
             balance     REAL,
             card_name   TEXT,

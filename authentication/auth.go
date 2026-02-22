@@ -11,21 +11,23 @@ import (
 
 func SignUp(db *sql.DB, user models.User) bool {
 	msg, ok :=  validateUser(db, user)
-	if !ok {
-		fmt.Println(msg)
-		return false
-	}
 	fmt.Println(msg)
-	return true
+	return ok
+}
+
+func Login(db *sql.DB, user models.User) bool {
+    msg, ok := validateLogin(db, user.Email, user.Password)
+    fmt.Println(msg)
+    return ok
 }
 
 func validateUser(db *sql.DB, user models.User) (string, bool) {
 	var msg string
-	userExists, err := UserExists(db, user.Email)
+	uExists, err := userExists(db, user.Email)
 	if err != nil {
 		return "Erro ao validar usuário", false
 	}
-	if userExists {
+	if uExists {
 		msg = fmt.Sprintf("O usuário %s já existe, faça login ou tente novamente", user.Email)
 		return msg, false
 	}
@@ -53,7 +55,25 @@ func validateUser(db *sql.DB, user models.User) (string, bool) {
     return msg, true
 }
 
-func UserExists(db *sql.DB, email string) (bool, error) {
+
+func validateLogin(db *sql.DB, email, password string) (string, bool) {
+    query := `SELECT 1 FROM users WHERE email = ? AND password = ?`
+
+    var exists int
+    err := db.QueryRow(query, email, password).Scan(&exists)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            msg := fmt.Sprintf("Usuário %s ou senha não encontrados", email)
+            return msg, false
+        }
+        return "Erro ao validar usuário", false
+    }
+
+    msg := fmt.Sprintf("Bem-vindo novamente ao GoBank %s", email)
+    return msg, true
+}
+
+func userExists(db *sql.DB, email string) (bool, error) {
 	query := `SELECT 1 FROM users WHERE email = ?`
 
 	var exists int
@@ -67,3 +87,4 @@ func UserExists(db *sql.DB, email string) (bool, error) {
 	}
 	return true, nil
 }
+

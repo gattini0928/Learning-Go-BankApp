@@ -67,6 +67,7 @@ type Invoice struct {
 
 type Account struct {
 	AccountUser User
+	AccountPassword string
 	Level AccountLevel
 	CreditCard CreditCard
 	Transactions BankTransactions
@@ -85,6 +86,7 @@ func NewAccount(user User) Account {
 	}
 	return Account {
 		AccountUser: user,
+		AccountPassword: "",
 		Level: Bronze,
 		CreditCard: creditCard,
 		Transactions: BankTransactions{
