@@ -4,12 +4,15 @@ import (
 	"bankapp/authentication"
 	"bankapp/database"
 	"bankapp/methods"
+	"log"
 	"bankapp/models"
 	"bufio"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+	"database/sql"
+	_ "modernc.org/sqlite"
 )
 
 func App() {
@@ -79,7 +82,6 @@ func App() {
 			
 			p, ok := authentication.ValidatePassword(accountPassword)
 			if !ok {
-				fmt.Println("Senha bancária inválida")
 				continue
 			}
 			account.AccountPassword = p
@@ -87,7 +89,7 @@ func App() {
 			methods.InsertAccount(db, account)
 			fmt.Printf("Usuário %s criado com sucesso, seja bem-vindo ao GoBank \n", user.Email)
 			logged = true
-			bankManager(reader, logged)
+			bankManager(reader, db, account, logged)
 
 		} else if choice == 2 {
 			fmt.Print("Seu E-mail: ")
@@ -109,9 +111,14 @@ func App() {
 				continue
 			}
 
+			account, err := methods.GetAccount(db, user.Email)
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			fmt.Printf("Bem-vindo novamente ao GoBank %s \n", user.Email)
 			logged = true
-			bankManager(reader, logged)
+			bankManager(reader, db, account, logged)
 
 		}  else if choice == 3 {
 			fmt.Println("Até mais, obrigado por usar o GoBank")
@@ -123,7 +130,7 @@ func App() {
 	}
 }
 
-func bankManager(reader *bufio.Reader , logged bool) {
+func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logged bool) {
 	if logged {
 		for {
 			fmt.Println("1 - Transferir")
@@ -140,7 +147,20 @@ func bankManager(reader *bufio.Reader , logged bool) {
 				continue
 			}
 			if choice == 1 {
-				methods.NewTransfer()
+				fmt.Println("Digite o email do destinatário: ")
+				email, _ := reader.ReadString('\n')
+				email = strings.TrimSpace(email)
+
+				fmt.Println("Digite o valor da transferência: ")
+				amount, _ := reader.ReadString('\n')
+				amount = strings.TrimSpace(amount)
+
+				msg, ok := methods.NewTransfer(db, account, email, amount)
+				if !ok {
+					fmt.Println(msg)
+					continue
+				}
+				fmt.Println(msg)
 			} else if choice == 2 {
 				methods.CheckBalance()
 			} else if choice == 3 {

@@ -1,12 +1,12 @@
 package authentication
 
 import (
-	"database/sql"
-	"fmt"
-	_ "modernc.org/sqlite"
 	"bankapp/models"
 	"bankapp/validators"
-
+	"database/sql"
+	"fmt"
+	"unicode"
+	_ "modernc.org/sqlite"
 )
 
 func SignUp(db *sql.DB, user models.User) bool {
@@ -23,7 +23,7 @@ func Login(db *sql.DB, user models.User) bool {
 
 func validateUser(db *sql.DB, user models.User) (string, bool) {
 	var msg string
-	uExists, err := userExists(db, user.Email)
+	uExists, err := UserExists(db, user.Email)
 	if err != nil {
 		return "Erro ao validar usuário", false
 	}
@@ -73,7 +73,7 @@ func validateLogin(db *sql.DB, email, password string) (string, bool) {
     return msg, true
 }
 
-func userExists(db *sql.DB, email string) (bool, error) {
+func UserExists(db *sql.DB, email string) (bool, error) {
 	query := `SELECT 1 FROM users WHERE email = ?`
 
 	var exists int
@@ -88,3 +88,22 @@ func userExists(db *sql.DB, email string) (bool, error) {
 	return true, nil
 }
 
+func ValidatePassword(password string) (string, bool) {
+	if password == "" {
+		fmt.Println("Sua senha não pode ser nula!")
+		return password, false
+	}
+
+	if len(password) < 6 || len(password) > 6 {
+		fmt.Println("Sua senha deve ter 6 caracteres!")
+		return password, false
+	}
+	
+	for _, char := range password {
+		if !unicode.IsDigit(char) {
+			fmt.Println("Sua senha deve conter apenas dígitos")
+			return password, false
+		}
+	}
+	return password, true
+}

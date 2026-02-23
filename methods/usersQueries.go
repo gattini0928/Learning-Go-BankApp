@@ -34,3 +34,24 @@ func InsertAccount(db *sql.DB, a models.Account) {
         log.Fatal(err)
     }
 }
+
+func GetAccount(db *sql.DB, email string) (models.Account, error) {
+    query := `SELECT a.balance, a.level, a.card_number, a.card_name, 
+              a.card_cvv, a.card_expiry, a.card_limit, 
+              a.invoice_due_date, a.invoice_total, a.account_password
+              FROM accounts a
+              JOIN users u ON u.id = a.user_id
+              WHERE u.email = ?`
+
+    var a models.Account
+    err := db.QueryRow(query, email).Scan(
+        &a.Balance, &a.Level, &a.CreditCard.CardNumber, &a.CreditCard.HolderName,
+        &a.CreditCard.Cvv, &a.CreditCard.ExpiryDate, &a.CreditCard.Limit,
+        &a.Invoice.DueDate, &a.Invoice.Total, &a.AccountPassword,
+    )
+    if err != nil {
+        return models.Account{}, err
+    }
+    a.AccountUser.Email = email
+    return a, nil
+}
