@@ -1,9 +1,10 @@
 package methods
 
 import (
-	"database/sql"
 	"bankapp/models"
-	"log"	
+	"database/sql"
+	"log"
+
 	_ "modernc.org/sqlite"
 )
 
@@ -63,4 +64,26 @@ func GetEmailById(db *sql.DB, id int) string {
         return "desconhecido"
     }
     return email
+}
+
+func PaidInvoice(db *sql.DB, account models.Account) bool {
+    tx, err := db.Begin()
+    if err != nil {
+        return false
+    }
+
+    _, err = tx.Exec(`
+        UPDATE accounts
+        SET 
+            invoice_paid = 1,
+            balance = balance - ?
+        WHERE user_id = ?
+    `, account.Invoice.Total, account.AccountUser.Id)
+
+    if err != nil {
+        tx.Rollback()
+        return false
+    }
+
+    return tx.Commit() == nil
 }

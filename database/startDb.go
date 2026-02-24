@@ -35,6 +35,7 @@ func StartDB() *sql.DB {
             card_limit  REAL,
 			invoice_due_date TEXT,
 			invoice_total REAL,
+			invoice_paid INTEGER NOT NULL DEFAULT 0
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
 

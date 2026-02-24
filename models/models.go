@@ -16,13 +16,13 @@ const (
 	Premium AccountLevel = "Premium"
 )
 
-var AccountPrices = map[AccountLevel]int {
-	"Bronze": 0,
-	"Silver": 30,
-	"Gold": 50,
-	"Platinum": 70,
-	"Diamon": 120,
-	"Premium": 200,
+var AccountPrices = map[AccountLevel]int{
+	Bronze:   0,
+	Silver:   30,
+	Gold:     50,
+	Platinum: 70,
+	Diamond:  120,
+	Premium:  200,
 }
 
 type User struct {
@@ -63,6 +63,7 @@ type Invoice struct {
 	Transactions []CreditCardTransaction
 	Total float64
 	DueDate time.Time
+	Paid bool
 }
 
 type Account struct {
@@ -96,6 +97,7 @@ func NewAccount(user User) Account {
 			Transactions: []CreditCardTransaction{},
             Total:        0,
             DueDate:      time.Now().AddDate(0, 1, 0),
+			Paid: false,
 		},
 		Balance: 200,
 	}

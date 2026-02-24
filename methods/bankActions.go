@@ -65,7 +65,7 @@ func CheckBalance(db *sql.DB, email string) string {
 func DisplayTransactions(db  *sql.DB, email string){
 	account, err := GetAccount(db, email)
 	if err != nil {
-		fmt.Println("Erro ao buscar faturas")
+		fmt.Println("Erro ao buscar transações")
 		return
 	}
 
@@ -74,11 +74,43 @@ func DisplayTransactions(db  *sql.DB, email string){
 		fmt.Println("Você não possui nenhuma transação bancária até o momento")
 		return
 	}
-	
+
 	for _, t := range transactions {
 		from := GetEmailById(db, t.From)
 		to := GetEmailById(db, t.To)
 		fmt.Printf("Data: %v - Valor: R$%.2f - De: %s - Para: %s\n", t.Date, t.Amount, from, to)
 	}
 }
+
+func CheckCreditInvoices(db *sql.DB, email string) {
+	account, err := GetAccount(db, email)
+	if err != nil {
+		fmt.Println("Erro ao buscar fatura")
+	}
+	invoice := account.Invoice 
+	fmt.Printf("Data de Vencimento: %v - Total: R$%.2f", invoice.DueDate, invoice.Total)
+}
+
+func PayInvoice(db *sql.DB, email string) {
+	account, err := GetAccount(db, email)
+	if err != nil {
+		fmt.Println("Erro ao buscar fatura")
+		return
+	}
+
+	if account.Balance < account.Invoice.Total {
+		fmt.Println("Você não possui saldo o suficiente para pagar esta fatura.")
+		return
+	}
+
+	success := PaidInvoice(db, account)
+	if !success {
+		fmt.Println("Falha ao pagar fatura, tente novamente mais tarde.")
+		return
+	}
+
+	fmt.Printf("Fatura com valor de: R$%.2f paga com sucesso!", account.Invoice.Total)
+}
+
+
 

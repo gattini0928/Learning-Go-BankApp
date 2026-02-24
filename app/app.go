@@ -169,7 +169,7 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 			} else if choice == 4 {
 				methods.CheckCreditInvoices(db, account.AccountUser.Email)
 			} else if choice == 5 {
-				methods.PayInvoice()
+				methods.PayInvoice(db, account.AccountUser.Email)
 			} else if choice == 6 {
 				fmt.Println("Até mais, obrigado por usar o GoBank")
 				logged = false
