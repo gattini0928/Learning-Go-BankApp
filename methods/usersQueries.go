@@ -55,3 +55,12 @@ func GetAccount(db *sql.DB, email string) (models.Account, error) {
     a.AccountUser.Email = email
     return a, nil
 }
+
+func GetEmailById(db *sql.DB, id int) string {
+    var email string
+    err := db.QueryRow(`SELECT email FROM users WHERE id = ?`, id).Scan(&email)
+    if err != nil {
+        return "desconhecido"
+    }
+    return email
+}

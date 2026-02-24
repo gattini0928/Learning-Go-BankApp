@@ -54,3 +54,31 @@ func NewTransfer(db *sql.DB, account models.Account, email string, amount string
 	return msg, true
 }
 
+func CheckBalance(db *sql.DB, email string) string {
+	account, err := GetAccount(db, email)
+	if err != nil {
+		return "Erro ao buscar saldo"
+	}
+	return fmt.Sprintf("Seu saldo atual é de R$%.2f", account.Balance)
+}
+
+func DisplayTransactions(db  *sql.DB, email string){
+	account, err := GetAccount(db, email)
+	if err != nil {
+		fmt.Println("Erro ao buscar faturas")
+		return
+	}
+
+	transactions := account.Transactions.Transactions
+	if len(transactions) == 0 {
+		fmt.Println("Você não possui nenhuma transação bancária até o momento")
+		return
+	}
+	
+	for _, t := range transactions {
+		from := GetEmailById(db, t.From)
+		to := GetEmailById(db, t.To)
+		fmt.Printf("Data: %v - Valor: R$%.2f - De: %s - Para: %s\n", t.Date, t.Amount, from, to)
+	}
+}
+

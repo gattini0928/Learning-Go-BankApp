@@ -135,9 +135,10 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 		for {
 			fmt.Println("1 - Transferir")
 			fmt.Println("2 - Consultar Saldo")
-			fmt.Println("3 - Ver Faturas")
-			fmt.Println("4 - Pagar Fatura")
-			fmt.Println("5 - Sair")
+			fmt.Println("4 - Visualizar Transações")
+			fmt.Println("4 - Visualizar Faturas")
+			fmt.Println("5 - Pagar Fatura")
+			fmt.Println("6 - Sair")
 
 			input, _ := reader.ReadString('\n')
 			input = strings.TrimSpace(input)
@@ -162,13 +163,16 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 				}
 				fmt.Println(msg)
 			} else if choice == 2 {
-				methods.CheckBalance()
-			} else if choice == 3 {
-				methods.CheckInvoices()
+				fmt.Println(methods.CheckBalance(db, account.AccountUser.Email))
+			}else if choice == 3 {
+				methods.DisplayTransactions(db, account.AccountUser.Email)
 			} else if choice == 4 {
-				methods.PayInvoice()
+				methods.CheckCreditInvoices(db, account.AccountUser.Email)
 			} else if choice == 5 {
+				methods.PayInvoice()
+			} else if choice == 6 {
 				fmt.Println("Até mais, obrigado por usar o GoBank")
+				logged = false
 				break
 			} else {
 				fmt.Println("Opção Inválida, por favor tente novamente")
