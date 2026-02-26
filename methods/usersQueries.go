@@ -24,10 +24,10 @@ func InsertAccount(db *sql.DB, a models.Account) {
     userId := InsertUser(db, a.AccountUser)
 
     _, err := db.Exec(
-        `INSERT INTO accounts (user_id, level, balance, card_name, card_number,
+        `INSERT INTO accounts (user_id, account_password, level, balance, card_name, card_number,
         card_cvv, card_expiry, card_limit, invoice_due_date, invoice_total)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        userId, a.Level, a.Balance, a.CreditCard.HolderName,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        userId, a.AccountPassword, a.Level, a.Balance, a.CreditCard.HolderName,
         a.CreditCard.CardNumber, a.CreditCard.Cvv, a.CreditCard.ExpiryDate,
         a.CreditCard.Limit, a.Invoice.DueDate, a.Invoice.Total,
     )

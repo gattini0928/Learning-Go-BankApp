@@ -35,7 +35,7 @@ func StartDB() *sql.DB {
             card_limit  REAL,
 			invoice_due_date TEXT,
 			invoice_total REAL,
-			invoice_paid INTEGER NOT NULL DEFAULT 0
+			invoice_paid INTEGER NOT NULL DEFAULT 0,
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
 
@@ -47,7 +47,7 @@ func StartDB() *sql.DB {
 			amount REAL,
 			date TEXT,
 			FOREIGN KEY (account_id) REFERENCES accounts(id)
-		)
+		);
 
 		CREATE TABLE IF NOT EXISTS credit_transactions (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +57,7 @@ func StartDB() *sql.DB {
 			amount REAL,
 			date TEXT,
 			FOREIGN KEY (account_id) REFERENCES accounts(id)
-		)
+		);
 	`)
 
 	if err != nil {

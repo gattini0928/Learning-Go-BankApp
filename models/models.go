@@ -62,7 +62,7 @@ type CreditCardTransaction struct {
 type Invoice struct {
 	Transactions []CreditCardTransaction
 	Total float64
-	DueDate time.Time
+	DueDate string
 	Paid bool
 }
 
@@ -96,7 +96,7 @@ func NewAccount(user User) Account {
 		Invoice: Invoice {
 			Transactions: []CreditCardTransaction{},
             Total:        0,
-            DueDate:      time.Now().AddDate(0, 1, 0),
+            DueDate:      time.Now().AddDate(0, 1, 0).Format("2006-01-02"),
 			Paid: false,
 		},
 		Balance: 200,

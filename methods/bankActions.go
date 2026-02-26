@@ -29,6 +29,7 @@ func NewTransfer(db *sql.DB, account models.Account, email string, amount string
 	userRecipient, err := GetAccount(db, email)
 
 	if err != nil {
+		fmt.Println("ERRO GetAccount", err)
 		return "Erro ao buscar destinatário", false
 	}
 
@@ -57,6 +58,7 @@ func NewTransfer(db *sql.DB, account models.Account, email string, amount string
 func CheckBalance(db *sql.DB, email string) string {
 	account, err := GetAccount(db, email)
 	if err != nil {
+		fmt.Println("ERRO GetAccount", err)
 		return "Erro ao buscar saldo"
 	}
 	return fmt.Sprintf("Seu saldo atual é de R$%.2f", account.Balance)
@@ -65,6 +67,7 @@ func CheckBalance(db *sql.DB, email string) string {
 func DisplayTransactions(db  *sql.DB, email string){
 	account, err := GetAccount(db, email)
 	if err != nil {
+		fmt.Println("ERRO GetAccount", err)
 		fmt.Println("Erro ao buscar transações")
 		return
 	}
@@ -84,16 +87,21 @@ func DisplayTransactions(db  *sql.DB, email string){
 
 func CheckCreditInvoices(db *sql.DB, email string) {
 	account, err := GetAccount(db, email)
+
 	if err != nil {
+		fmt.Println("ERRO GetAccount", err)
 		fmt.Println("Erro ao buscar fatura")
 	}
+
 	invoice := account.Invoice 
 	fmt.Printf("Data de Vencimento: %v - Total: R$%.2f", invoice.DueDate, invoice.Total)
 }
 
 func PayInvoice(db *sql.DB, email string) {
 	account, err := GetAccount(db, email)
+
 	if err != nil {
+		fmt.Println("ERRO GetAccount", err)
 		fmt.Println("Erro ao buscar fatura")
 		return
 	}

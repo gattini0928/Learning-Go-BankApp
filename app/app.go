@@ -21,42 +21,42 @@ func App() {
 	defer db.Close()
 	logged := false
 	for {
-		fmt.Println("Bem-vindo ao GoBank")
-		fmt.Println("1 - Criar usuário")
-		fmt.Println("2 - Fazer Login")
-		fmt.Println("3 - Sair")
+		fmt.Println("💰 Bem-vindo ao GoBank 💰")
+		fmt.Println("1 - Criar usuário 😉➕")
+		fmt.Println("2 - Fazer Login 🚪")
+		fmt.Println("3 - Sair 🚪➡️")
 
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
 		choice, err := strconv.Atoi(input)
 		if err != nil {
-			fmt.Println("Opção Inválida. Tente Novamente")
+			fmt.Println("❌ Opção Inválida. Tente Novamente")
 			continue
 		}
 
 		if choice == 1 {
-			fmt.Print("Nome Completo: ")
+			fmt.Print("🪪 Nome Completo: ")
 			name, _ := reader.ReadString('\n')
 			name = strings.TrimSpace(name)
 
-			fmt.Print("Seu E-mail: ")
+			fmt.Print("📩 Seu E-mail: ")
 			email, _ := reader.ReadString('\n')
 			email = strings.TrimSpace(email)
 
-			fmt.Print("Seu CPF: ")
+			fmt.Print("🔢 Seu CPF: ")
 			cpf, _ := reader.ReadString('\n')
 			cpf = strings.TrimSpace(cpf)
 
-			fmt.Print("Senha: ")
+			fmt.Print("🔑 Senha: ")
 			password, _ := reader.ReadString('\n')
 			password = strings.TrimSpace(password)
 
-			fmt.Print("Confirme sua senha: ")
+			fmt.Print("🔑 Confirme sua senha: ")
 			confirmPassword, _ := reader.ReadString('\n')
 			confirmPassword = strings.TrimSpace(confirmPassword)
 
 			if confirmPassword != password {
-				fmt.Println("As senhas não coincidem")
+				fmt.Println("❌ As senhas não coincidem")
 				continue
 			}
 
@@ -70,13 +70,13 @@ func App() {
 
 			signup := authentication.SignUp(db, user)
 			if !signup {
-				fmt.Println("Falha ao criar usuário")
+				fmt.Println("❌ Falha ao criar usuário")
 				continue
 			}
 
-			fmt.Println("Agora crie sua senha bancária, ela será usada para confirmar suas ações no GoBank")
-			fmt.Println("Sua senha deve conter 6 DÍGITOS!")
-			fmt.Println("Sua senha(ex: 924501): ")
+			fmt.Println("🔢🔑 Agora crie sua senha bancária, ela será usada para confirmar suas ações no GoBank")
+			fmt.Println("‼️ Sua senha deve conter 6 DÍGITOS!")
+			fmt.Println("🔑 Sua senha(ex: 924501): ")
 			accountPassword, _ := reader.ReadString('\n')
 			accountPassword = strings.TrimSpace(accountPassword)
 			
@@ -87,16 +87,16 @@ func App() {
 			account.AccountPassword = p
 
 			methods.InsertAccount(db, account)
-			fmt.Printf("Usuário %s criado com sucesso, seja bem-vindo ao GoBank \n", user.Email)
+			fmt.Printf("😎 Usuário %s criado com sucesso, seja bem-vindo ao GoBank \n", user.Email)
 			logged = true
 			bankManager(reader, db, account, logged)
 
 		} else if choice == 2 {
-			fmt.Print("Seu E-mail: ")
+			fmt.Print("📩 Seu E-mail: ")
 			email, _ := reader.ReadString('\n')
 			email = strings.TrimSpace(email)
 
-			fmt.Print("Senha: ")
+			fmt.Print("🔑 Senha: ")
 			password, _ := reader.ReadString('\n')
 			password = strings.TrimSpace(password)
 
@@ -107,7 +107,7 @@ func App() {
 
 			login := authentication.Login(db, user)
 			if !login {
-				fmt.Println("Falha no login, tente novamente")
+				fmt.Println("❌ Falha no login, tente novamente")
 				continue
 			}
 
@@ -116,15 +116,15 @@ func App() {
 				log.Fatal(err)
 			}
 
-			fmt.Printf("Bem-vindo novamente ao GoBank %s \n", user.Email)
+			fmt.Printf("😎 Bem-vindo novamente ao GoBank %s \n", user.Email)
 			logged = true
 			bankManager(reader, db, account, logged)
 
 		}  else if choice == 3 {
-			fmt.Println("Até mais, obrigado por usar o GoBank")
+			fmt.Println("👋 Até mais, obrigado por usar o GoBank")
 			break
 		} else {
-			fmt.Println("Opção Inválida, por favor tente novamente")
+			fmt.Println("❌ Opção Inválida, por favor tente novamente")
 			continue
 		}
 	}
@@ -133,26 +133,26 @@ func App() {
 func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logged bool) {
 	if logged {
 		for {
-			fmt.Println("1 - Transferir")
-			fmt.Println("2 - Consultar Saldo")
-			fmt.Println("4 - Visualizar Transações")
-			fmt.Println("4 - Visualizar Faturas")
-			fmt.Println("5 - Pagar Fatura")
-			fmt.Println("6 - Sair")
+			fmt.Println("1 - Transferir 🪪")
+			fmt.Println("2 - Consultar Saldo 🔍")
+			fmt.Println("3 - Visualizar Transações 🗺️")
+			fmt.Println("4 - Visualizar Faturas 🗺️")
+			fmt.Println("5 - Pagar Fatura 💳")
+			fmt.Println("6 - Sair ➡️🚪")
 
 			input, _ := reader.ReadString('\n')
 			input = strings.TrimSpace(input)
 			choice, err := strconv.Atoi(input)
 			if err != nil {
-				fmt.Println("Opção Inválida. Tente Novamente")
+				fmt.Println("❌ Opção Inválida. Tente Novamente")
 				continue
 			}
 			if choice == 1 {
-				fmt.Println("Digite o email do destinatário: ")
+				fmt.Println("📩 Digite o email do destinatário: ")
 				email, _ := reader.ReadString('\n')
 				email = strings.TrimSpace(email)
 
-				fmt.Println("Digite o valor da transferência: ")
+				fmt.Println("💵 Digite o valor da transferência: ")
 				amount, _ := reader.ReadString('\n')
 				amount = strings.TrimSpace(amount)
 
@@ -171,11 +171,11 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 			} else if choice == 5 {
 				methods.PayInvoice(db, account.AccountUser.Email)
 			} else if choice == 6 {
-				fmt.Println("Até mais, obrigado por usar o GoBank")
+				fmt.Println("👋 Até mais, obrigado por usar o GoBank")
 				logged = false
 				break
 			} else {
-				fmt.Println("Opção Inválida, por favor tente novamente")
+				fmt.Println("❌ Opção Inválida, por favor tente novamente")
 				continue
 			}
 		}
