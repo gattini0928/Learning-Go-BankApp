@@ -15,6 +15,16 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+var itemsToPurchase = map[string]float64 {
+	"Banana": 7.00,
+	"Book - O Alquimista": 50.0,
+	"Mouse": 199.99,
+	"Keyboard": 400.00,
+	"TV": 750.0,
+	"Go Course for Sênior's Developers": 2000,
+	"PC": 10000.00,
+}
+
 func App() {
 	reader := bufio.NewReader(os.Stdin)
 	db := database.StartDB()
@@ -138,7 +148,8 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 			fmt.Println("3 - Visualizar Transações 🗺️")
 			fmt.Println("4 - Visualizar Faturas 🗺️")
 			fmt.Println("5 - Pagar Fatura 💳")
-			fmt.Println("6 - Sair ➡️🚪")
+			fmt.Println("6 - Realizar Compra 🛍️")
+			fmt.Println("7 - Sair ➡️🚪")
 
 			input, _ := reader.ReadString('\n')
 			input = strings.TrimSpace(input)
@@ -156,7 +167,11 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 				amount, _ := reader.ReadString('\n')
 				amount = strings.TrimSpace(amount)
 
-				msg, ok := methods.NewTransfer(db, account, email, amount)
+				fmt.Println("Digite sua senha bancária para confirmar a transferência: ")
+				a_password, _ := reader.ReadString('\n')
+				a_password = strings.TrimSpace(a_password) 
+
+				msg, ok := methods.NewTransfer(db, account, email, amount, a_password)
 				if !ok {
 					fmt.Println(msg)
 					continue
@@ -169,8 +184,15 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 			} else if choice == 4 {
 				methods.CheckCreditInvoices(db, account.AccountUser.Email)
 			} else if choice == 5 {
-				methods.PayInvoice(db, account.AccountUser.Email)
-			} else if choice == 6 {
+				fmt.Println("Digite sua senha bancária para confirmar o pagamento da sua fatura: ")
+				a_password, _ := reader.ReadString('\n')
+				a_password = strings.TrimSpace(a_password) 
+				methods.PayInvoice(db, account.AccountUser.Email, a_password)
+			
+			}else if choice == 6 {
+
+
+			} else if choice == 7 {
 				fmt.Println("👋 Até mais, obrigado por usar o GoBank")
 				logged = false
 				break

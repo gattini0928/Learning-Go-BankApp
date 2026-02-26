@@ -17,5 +17,3 @@ Compra parcelada baseada num valor(até 20 reais (1x), > 20 < 60(2x), > 60 < 100
 
 map[string]float64 -> Produtos para testar valores e erros
 
-
-

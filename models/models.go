@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type Product struct {
+	Id int `json:"id"`
+	Title string `json:"title"`
+	Price float64 `json:"price"`
+}
+
 type AccountLevel string
 
 const (

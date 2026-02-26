@@ -9,7 +9,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func NewTransfer(db *sql.DB, account models.Account, email string, amount string) (string, bool) {
+func NewTransfer(db *sql.DB, account models.Account, email string, amount string, a_password string) (string, bool) {
 	uExists, err := authentication.UserExists(db, email)
 	if err != nil {
 		return "Erro ao encontrar email", false
@@ -39,6 +39,10 @@ func NewTransfer(db *sql.DB, account models.Account, email string, amount string
 
 	if account.Balance <= amountFloat {
 		return "Seu saldo é menor do que o valor fornecido", false
+	}
+
+	if a_password != account.AccountPassword {
+		return "Senha incorreta, tente novamente.", false
 	}
 
 	_, err = db.Exec(`UPDATE accounts SET balance = balance - ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, amountFloat, account.AccountUser.Email)
@@ -97,7 +101,7 @@ func CheckCreditInvoices(db *sql.DB, email string) {
 	fmt.Printf("Data de Vencimento: %v - Total: R$%.2f", invoice.DueDate, invoice.Total)
 }
 
-func PayInvoice(db *sql.DB, email string) {
+func PayInvoice(db *sql.DB, email string, a_password string) {
 	account, err := GetAccount(db, email)
 
 	if err != nil {
@@ -108,6 +112,11 @@ func PayInvoice(db *sql.DB, email string) {
 
 	if account.Balance < account.Invoice.Total {
 		fmt.Println("Você não possui saldo o suficiente para pagar esta fatura.")
+		return
+	}
+
+	if a_password != account.AccountPassword {
+		fmt.Println("Senha incorreta, tente novamente.")
 		return
 	}
 
