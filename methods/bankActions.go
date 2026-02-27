@@ -198,7 +198,7 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 				return "A data de validade do seu cartão venceu", false
 			}
 
-			if productPrice >= account.CreditCard.Limit {
+			if productPrice > account.CreditCard.Limit {
 				return "O valor da compra excede o limite do seu cartão", false
 			}
 
@@ -208,7 +208,7 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 			}
 
 			installmentPrice := productPrice / float64(installments)
-			_, err = db.Exec(`UPDATE accounts SET invoice_total = invoice_total - ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, installmentPrice, account.AccountUser.Email)
+			_, err = db.Exec(`UPDATE accounts SET invoice_total = invoice_total + ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, installmentPrice, account.AccountUser.Email)
 						if err != nil {
 				return "Erro ao realizar pagamento", false
 			}
@@ -219,9 +219,9 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 			
 			_, err = db.Exec(`
 				INSERT INTO credit_transactions 
-				(from_account, to, amount, date, installments)
+				(account_id,to, amount, date, installments)
 				VALUES(?,?,?,?,?)
-			`, account.AccountUser.Id, to, amount, date, installments)
+			`, account.Id, to, amount, date, installments)
 			if err != nil {
 				return "Erro ao realizar pagamento", false
 			}
@@ -232,8 +232,6 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 	}
 }
 
-// Criar um produto aleatório struct {}
-// string -> 
 
 
 

@@ -73,6 +73,7 @@ type Invoice struct {
 }
 
 type Account struct {
+	Id int
 	AccountUser User
 	AccountPassword string
 	Level AccountLevel
