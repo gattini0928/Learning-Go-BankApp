@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 	_ "modernc.org/sqlite"
 )
 
@@ -137,47 +138,98 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 		return "Erro ao acessar conta", false
 	}
 
+	fmt.Println("D para Débito, C para crédito:")
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
 
 	choice := strings.ToLower(input)
-	if choice == "d" {
-		if account.Balance < productPrice {
-			return "Você não possui saldo o suficiente para realizar esta compra",false
-		}
-		_, err = db.Exec(`UPDATE accounts SET balance = balance - ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, productPrice, account.AccountUser.Email)
-		if err != nil {
-			return "Erro ao realizar pagamento", false
-		}
-		msg := fmt.Sprintf("Compra: %s no valor de: R$%.2f processada com sucesso", productTitle, productPrice)
-		return msg, true
-	} else if choice == "c" {
-		// NAO SETAR BALANCE, MAS SETAR ->
-		fmt.Println("Digite os dados do seu cartão de crédito")
-		// Verificar se dados batem primeiro, success prosseguir
-		// Verificar se compra é maior que o limit , se sim -> Barrar
-		// Senão -> Pedir infos de cartao de crédito(se corretas prosseguir)
-		// limit -= product.Price
-		// Success -> Options 12x valor divido por numsInstallment 
-		// From -> user
-		// To -> "GoApp"
-		// Amount -> productPrice
-		// Date -> time.Now().AddDate(0, 1, 0).Format("2006-01-02"),
-		// Enviar setando: Installments := valor divido por quantidade de parcelas
-		// transaction := models.CreditCardTransaction(From, To, Amount, Date, Installment)
-		// accounts.Invoice.Transaction.append(transaction)
-		// Total += productPrice
-		// Paid = false
+	switch choice {
+		case "d":
+			if account.Balance < productPrice {
+				return "Você não possui saldo o suficiente para realizar esta compra",false
+			}
+			_, err = db.Exec(`UPDATE accounts SET balance = balance - ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, productPrice, account.AccountUser.Email)
+			if err != nil {
+				return "Erro ao realizar pagamento", false
+			}
+			msg := fmt.Sprintf("Compra: %s no valor de: R$%.2f processada com sucesso", productTitle, productPrice)
+			return msg, true
+		case "c":
+			fmt.Println("Digite os dados do seu cartão de crédito: ")
+			fmt.Println("Nome no cartão: ")
+			cardName, _ := reader.ReadString('\n')
+			cardName = strings.TrimSpace(cardName)
+			
+			fmt.Println("Número no cartão: ")
+			cardNumber, _ := reader.ReadString('\n')
+			cardNumber = strings.TrimSpace(cardNumber)
+			
+			fmt.Println("Data de expiração")
+			expiryDate, _ := reader.ReadString('\n')
+			expiryDate = strings.TrimSpace(expiryDate)
 
-	} else {
-		return "Opção inválida, tente novamente", false
+			fmt.Println("Cvv: ")
+			cvv, _ := reader.ReadString('\n')
+			cvv = strings.TrimSpace(cvv)
+
+			fmt.Println("Em quantas vezes você deseja realizar esta compra? Max(12x): ")
+			input, _ := reader.ReadString('\n')
+			input = strings.TrimSpace(input)
+			installments, err := strconv.Atoi(input)
+			if err != nil {
+					return "Erro ao escolher parcelas", false
+				}
+
+			if cardName != account.CreditCard.HolderName || cardNumber != account.CreditCard.CardNumber || 
+			expiryDate != account.CreditCard.ExpiryDate ||
+			cvv != account.CreditCard.Cvv{
+				return "Dados do cartão inválidos", false
+			}
+			if installments > 12  || installments <= 0{
+				return "Número de parcelas inválidas (1x-12x)", false
+			}
+
+			expiry, err := time.Parse("2006-01-02", account.CreditCard.ExpiryDate)
+			if err != nil {
+				return "Erro ao processar data do cartão de crédito", false
+			}
+
+			if time.Now().After(expiry) {
+				return "A data de validade do seu cartão venceu", false
+			}
+
+			if productPrice >= account.CreditCard.Limit {
+				return "O valor da compra excede o limite do seu cartão", false
+			}
+
+			_, err = db.Exec(`UPDATE accounts SET card_limit = card_limit - ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, productPrice, account.AccountUser.Email)
+			if err != nil {
+				return "Erro ao realizar pagamento", false
+			}
+
+			installmentPrice := productPrice / float64(installments)
+			_, err = db.Exec(`UPDATE accounts SET invoice_total = invoice_total - ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, installmentPrice, account.AccountUser.Email)
+						if err != nil {
+				return "Erro ao realizar pagamento", false
+			}
+
+			to := "GoApp"
+			amount := productPrice
+			date := time.Now().AddDate(0, 1, 0).Format("2006-01-02")
+			
+			_, err = db.Exec(`
+				INSERT INTO credit_transactions 
+				(from_account, to, amount, date, installments)
+				VALUES(?,?,?,?,?)
+			`, account.AccountUser.Id, to, amount, date, installments)
+			if err != nil {
+				return "Erro ao realizar pagamento", false
+			}
+			msg := fmt.Sprintf("Compra de %s, no valor de: R$%.2f realizada com sucesso", productTitle, productPrice)
+			return msg, true
+		default:
+			return "Opção inválida, tente novamente", false
 	}
-
-	fmt.Println("D para Débito, C para crédito:")
-	
-
-
-
 }
 
 // Criar um produto aleatório struct {}
