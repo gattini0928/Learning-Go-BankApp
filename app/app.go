@@ -4,8 +4,9 @@ import (
 	"bankapp/authentication"
 	"bankapp/database"
 	"bankapp/methods"
-	"log"
+	"bankapp/utils"
 	"bankapp/models"
+	"log"
 	"bufio"
 	"fmt"
 	"os"
@@ -148,7 +149,7 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 			fmt.Println("3 - Visualizar Transações 🗺️")
 			fmt.Println("4 - Visualizar Faturas 🗺️")
 			fmt.Println("5 - Pagar Fatura 💳")
-			fmt.Println("6 - Realizar Compra 🛍️")
+			fmt.Println("6 - Confirmar Compra 🛍️")
 			fmt.Println("7 - Sair ➡️🚪")
 
 			input, _ := reader.ReadString('\n')
@@ -190,8 +191,26 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 				methods.PayInvoice(db, account.AccountUser.Email, a_password)
 			
 			}else if choice == 6 {
+				products, err := utils.FetchProducts()
+				if err != nil {
+					fmt.Println("Erro ao acessar produtos, tente novamente")
+				}
+				product := utils.ShufflePurchase(products)
+				fmt.Printf("Você confirma a seguinte compra: %s | No valor de R$%.2f, (y/n)", product.Title, product.Price)
 
+				input, _ := reader.ReadString('\n')
+				input = strings.TrimSpace(input)
 
+				option := strings.ToLower(input)
+				if option == "y" {
+					methods.MakePurchase(db, reader, account.AccountUser.Email,product.Title, product.Price)
+				} else if option == "n" {
+					fmt.Println("Compra cancelada.")
+					continue
+				} else {
+					fmt.Println("Opção inválida, tente novamente")
+					continue
+				}
 			} else if choice == 7 {
 				fmt.Println("👋 Até mais, obrigado por usar o GoBank")
 				logged = false

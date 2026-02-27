@@ -1,11 +1,9 @@
 package main
-// import 
-// (
-// 	"bankapp/app"
-// )
 
+import "bankapp/app"
+// import "bankapp/utils"
 
 func main() {
-	// app.App()
-	fetchProducts()
+	app.App()
+	// utils.FetchProducts()
 }

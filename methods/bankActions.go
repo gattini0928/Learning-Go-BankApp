@@ -3,9 +3,11 @@ package methods
 import (
 	"bankapp/authentication"
 	"bankapp/models"
+	"bufio"
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 	_ "modernc.org/sqlite"
 )
 
@@ -128,6 +130,59 @@ func PayInvoice(db *sql.DB, email string, a_password string) {
 
 	fmt.Printf("Fatura com valor de: R$%.2f paga com sucesso!", account.Invoice.Total)
 }
+
+func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle string,productPrice float64) (string, bool) {
+	account, err := GetAccount(db, email)
+	if err != nil {
+		return "Erro ao acessar conta", false
+	}
+
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	choice := strings.ToLower(input)
+	if choice == "d" {
+		if account.Balance < productPrice {
+			return "Você não possui saldo o suficiente para realizar esta compra",false
+		}
+		_, err = db.Exec(`UPDATE accounts SET balance = balance - ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, productPrice, account.AccountUser.Email)
+		if err != nil {
+			return "Erro ao realizar pagamento", false
+		}
+		msg := fmt.Sprintf("Compra: %s no valor de: R$%.2f processada com sucesso", productTitle, productPrice)
+		return msg, true
+	} else if choice == "c" {
+		// NAO SETAR BALANCE, MAS SETAR ->
+		fmt.Println("Digite os dados do seu cartão de crédito")
+		// Verificar se dados batem primeiro, success prosseguir
+		// Verificar se compra é maior que o limit , se sim -> Barrar
+		// Senão -> Pedir infos de cartao de crédito(se corretas prosseguir)
+		// limit -= product.Price
+		// Success -> Options 12x valor divido por numsInstallment 
+		// From -> user
+		// To -> "GoApp"
+		// Amount -> productPrice
+		// Date -> time.Now().AddDate(0, 1, 0).Format("2006-01-02"),
+		// Enviar setando: Installments := valor divido por quantidade de parcelas
+		// transaction := models.CreditCardTransaction(From, To, Amount, Date, Installment)
+		// accounts.Invoice.Transaction.append(transaction)
+		// Total += productPrice
+		// Paid = false
+
+	} else {
+		return "Opção inválida, tente novamente", false
+	}
+
+	fmt.Println("D para Débito, C para crédito:")
+	
+
+
+
+}
+
+// Criar um produto aleatório struct {}
+// string -> 
+
 
 
 

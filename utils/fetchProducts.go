@@ -1,20 +1,19 @@
-package main
+package utils
 
 import (
 	"bankapp/models"
 	"encoding/json"
 	"io"
-	"fmt"
 	"log"
 	"net/http"
+	"math/rand/v2"
+	"fmt"
 )
 
-var products []models.Product
-
-func fetchProducts() {
+func FetchProducts() ([]models.Product, error){
 	resp, err := http.Get("https://fakestoreapi.com/products")
 
-		if err != nil {
+	if err != nil {
 		log.Fatalf("Erro ao fazer request: %v", err)
 	}
 
@@ -29,11 +28,21 @@ func fetchProducts() {
 		log.Fatalf("Erro ao ler resposta do body: %v", err)
 	}
 
+	var products []models.Product
+
 	err = json.Unmarshal(body, &products)
 	if err != nil {
 		log.Fatalf("Erro ao decodificar JSON: %v", err)
 	}
 
-	fmt.Println("Titulo", products[0].Title)
-	fmt.Println("preço", products[0].Price)
+	fmt.Printf("Products: %v", products[:5])
+
+	return products, nil 
+}
+
+func ShufflePurchase(products []models.Product) models.Product{
+	i := rand.IntN(len(products))
+	product := products[i]
+
+	return product
 }

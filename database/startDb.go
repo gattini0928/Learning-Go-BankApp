@@ -53,7 +53,7 @@ func StartDB() *sql.DB {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			account_id INTEGER,
 			from_user INTEGER,
-			to_user INTEGER,
+			to TEXT,
 			amount REAL,
 			date TEXT,
 			FOREIGN KEY (account_id) REFERENCES accounts(id)

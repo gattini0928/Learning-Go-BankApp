@@ -60,9 +60,10 @@ type BankTransactions struct {
 
 type CreditCardTransaction struct {
     From   int
-    To     int
+    To     string
     Amount float64
     Date   time.Time
+	Installments int
 }
 
 type Invoice struct {
