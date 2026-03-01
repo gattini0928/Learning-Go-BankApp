@@ -203,7 +203,11 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 
 				option := strings.ToLower(input)
 				if option == "y" {
-					methods.MakePurchase(db, reader, account.AccountUser.Email,product.Title, product.Price)
+					msg, ok := methods.MakePurchase(db, reader, account.AccountUser.Email,product.Title, product.Price)
+					if !ok {
+						fmt.Println(msg)
+						continue
+					}
 				} else if option == "n" {
 					fmt.Println("Compra cancelada.")
 					continue
