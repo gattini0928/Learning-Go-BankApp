@@ -183,6 +183,17 @@ func PayInvoice(db *sql.DB, email string, a_password string) {
 		return
 	}
 
+	_, err = db.Exec(`
+		UPDATE credit_transactions
+		SET remaining_installments = remaining_installments - 1
+		WHERE account_id = ? AND remaining_installments > 0
+		`, account.Id)
+
+	if err != nil {
+		fmt.Println("Erro ao atualizar parcelas")
+		return
+	}
+
 	success := PaidInvoice(db, account)
 	if !success {
 		fmt.Println("Falha ao pagar fatura, tente novamente mais tarde.")
@@ -292,9 +303,9 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 			
 			_, err = db.Exec(`
 				INSERT INTO credit_transactions 
-				(account_id, recipient , amount, date, installments)
-				VALUES(?,?,?,?,?)
-			`, account.Id, recipient, amount, date, installments)
+				(account_id, recipient , amount, date, installments, remaining_installments)
+				VALUES(?,?,?,?,?,?)
+			`, account.Id, recipient, amount, date, installments, installments)
 			if err != nil {
 				return "Erro ao realizar pagamento", false
 			}

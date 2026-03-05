@@ -64,6 +64,7 @@ type CreditCardTransaction struct {
     Amount float64
     Date  string
 	Installments int
+	RemainingInstallments int
 }
 
 type Invoice struct {

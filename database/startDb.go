@@ -57,6 +57,7 @@ func StartDB() *sql.DB {
 			amount REAL,
 			date TEXT,
 			installments INTEGER,
+			remaining_installments INTEGER,
 			FOREIGN KEY (account_id) REFERENCES accounts(id)
 		);
 	`)
