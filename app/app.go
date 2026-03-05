@@ -128,6 +128,8 @@ func App() {
 			}
 
 			fmt.Printf("😎 Bem-vindo novamente ao GoBank %s \n", user.Email)
+			msg := methods.UpdateAccountLevel(db, account.AccountUser.Email)
+			fmt.Println(msg)
 			logged = true
 			bankManager(reader, db, account, logged)
 

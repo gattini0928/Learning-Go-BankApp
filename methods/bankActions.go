@@ -132,7 +132,7 @@ func PayInvoice(db *sql.DB, email string, a_password string) {
 	fmt.Printf("Fatura com valor de: R$%.2f paga com sucesso!", account.Invoice.Total)
 }
 
-func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle string,productPrice float64) (string, bool) {
+func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle string, productPrice float64) (string, bool) {
 	account, err := GetAccount(db, email)
 	if err != nil {
 		return "Erro ao acessar conta", false
@@ -209,7 +209,7 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 
 			installmentPrice := productPrice / float64(installments)
 			_, err = db.Exec(`UPDATE accounts SET invoice_total = invoice_total + ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, installmentPrice, account.AccountUser.Email)
-						if err != nil {
+			if err != nil {
 				return "Erro ao realizar pagamento", false
 			}
 
@@ -230,6 +230,52 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 		default:
 			return "Opção inválida, tente novamente", false
 	}
+}
+
+func UpdateAccountLevel(db *sql.DB, email string) string {
+	account, err := GetAccount(db, email)
+	if err != nil {
+		return "Erro ao acessar conta"
+	}
+	var level string
+	var price int
+	var msg string
+
+	if account.Balance >= 50000 {
+		level = "Premium"
+		price = 200
+		msg = "Parabéns sua conta tem status Premium"
+	} else if account.Balance >= 20000 {
+		level = "Diamond"
+		price = 120
+		msg = "Parabéns sua conta tem status Diamante"
+	}  else if account.Balance >= 15000 {
+		level = "Platinum"
+		price = 70
+		msg = "Parabéns sua conta tem status Platina"
+	} else if account.Balance >= 10000 {
+		level = "Gold"
+		price = 50
+		msg = "Parabéns sua conta tem status Ouro"
+	} else if account.Balance >= 5000 {
+			level = "Silver"
+			price = 30
+			msg = "Parabéns sua conta tem status Prata"
+	} else if account.Balance < 5000 {
+		level = "Bronze"
+		price = 0
+		msg = "Sua conta tem status Bronze, acumule saldo para subir de nível"
+	}
+	_, err = db.Exec(`
+	UPDATE accounts 
+	SET level = ?, invoice_total = invoice_total - ?
+	WHERE user_id = (SELECT id FROM users WHERE email = ?)`,
+	level, price, email)
+
+	if err != nil {
+		return "Erro ao atualizar nível da conta"
+	}
+	return msg
 }
 
 
