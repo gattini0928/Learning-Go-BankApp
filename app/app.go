@@ -149,10 +149,11 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 			fmt.Println("1 - Transferir 🪪")
 			fmt.Println("2 - Consultar Saldo 🔍")
 			fmt.Println("3 - Visualizar Transações 🗺️")
-			fmt.Println("4 - Visualizar Faturas 🗺️")
-			fmt.Println("5 - Pagar Fatura 💳")
-			fmt.Println("6 - Confirmar Compra 🛍️")
-			fmt.Println("7 - Sair ➡️🚪")
+			fmt.Println("4 - Visualizar Transações de Crédito 🗺️")
+			fmt.Println("5 - Visualizar Faturas 🗺️")
+			fmt.Println("6 - Pagar Fatura 💳")
+			fmt.Println("7 - Confirmar Compra 🛍️")
+			fmt.Println("8 - Sair ➡️🚪")
 
 			input, _ := reader.ReadString('\n')
 			input = strings.TrimSpace(input)
@@ -184,15 +185,17 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 				fmt.Println(methods.CheckBalance(db, account.AccountUser.Email))
 			}else if choice == 3 {
 				methods.DisplayTransactions(db, account.AccountUser.Email)
-			} else if choice == 4 {
+			}else if choice == 4 {
+				methods.DisplayCreditTransactions(db, account.AccountUser.Email)
+			}else if choice == 5 {
 				methods.CheckCreditInvoices(db, account.AccountUser.Email)
-			} else if choice == 5 {
+			} else if choice == 6 {
 				fmt.Println("Digite sua senha bancária para confirmar o pagamento da sua fatura: ")
 				a_password, _ := reader.ReadString('\n')
 				a_password = strings.TrimSpace(a_password) 
 				methods.PayInvoice(db, account.AccountUser.Email, a_password)
 			
-			}else if choice == 6 {
+			}else if choice == 7 {
 				products, err := utils.FetchProducts()
 				if err != nil {
 					fmt.Println("Erro ao acessar produtos, tente novamente")
@@ -210,6 +213,7 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 						fmt.Println(msg)
 						continue
 					}
+					fmt.Println(msg)
 				} else if option == "n" {
 					fmt.Println("Compra cancelada.")
 					continue
@@ -217,7 +221,7 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 					fmt.Println("Opção inválida, tente novamente")
 					continue
 				}
-			} else if choice == 7 {
+			} else if choice == 8 {
 				fmt.Println("👋 Até mais, obrigado por usar o GoBank")
 				logged = false
 				break

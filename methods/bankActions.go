@@ -40,7 +40,7 @@ func NewTransfer(db *sql.DB, account models.Account, email string, amount string
 		return "O valor fornecido precisa ser maior do que 0", false
 	}
 
-	if account.Balance <= amountFloat {
+	if account.Balance < amountFloat {
 		return "Seu saldo é menor do que o valor fornecido", false
 	}
 
@@ -48,14 +48,54 @@ func NewTransfer(db *sql.DB, account models.Account, email string, amount string
 		return "Senha incorreta, tente novamente.", false
 	}
 
-	_, err = db.Exec(`UPDATE accounts SET balance = balance - ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, amountFloat, account.AccountUser.Email)
+	tx, err := db.Begin()
 	if err != nil {
+		return "Erro ao iniciar transação", false
+	}
+	_, err = tx.Exec(
+		`UPDATE accounts 
+		SET balance = balance - ? 
+		WHERE user_id = (SELECT id FROM users WHERE email = ?)`,
+		amountFloat, account.AccountUser.Email)
+
+	if err != nil {
+		tx.Rollback()
 		return "Erro na transferência", false
 	}
 
-	_, err = db.Exec(`UPDATE accounts SET balance = balance + ? WHERE user_id = (SELECT id FROM users WHERE email = ?)`, amountFloat, email)
+	_, err = tx.Exec(
+		`UPDATE accounts 
+		SET balance = balance + ? 
+		WHERE user_id = (SELECT id FROM users WHERE email = ?)`,
+		amountFloat, email)
+
+		if err != nil {
+			tx.Rollback()
+			return "Erro na transferência", false
+		}
+
+	recipient_account, err := GetAccount(db, email)
 	if err != nil {
-		return "Erro na transferência", false
+		return "Erro ao procurar conta destinatária" ,false
+	}
+	_, err = tx.Exec(`
+		INSERT INTO bank_transactions 
+		(account_id, from_user, to_user, amount, date)
+		VALUES (?, ?, ?, ?, ?)`,
+		account.Id,
+		account.AccountUser.Id,
+		recipient_account.AccountUser.Id,
+		amountFloat,
+		time.Now().Format("2006-01-02"))
+
+	if err != nil {
+		tx.Rollback()
+		return "Erro ao registrar transferência", false
+	}
+	
+	err = tx.Commit()
+	if err != nil {
+		return "Erro ao finalizar transação", false
 	}
 
 	msg := fmt.Sprintf("Transferência de R$%.2f para %s concluída com sucesso", amountFloat, userRecipient.AccountUser.Email)
@@ -89,6 +129,26 @@ func DisplayTransactions(db  *sql.DB, email string){
 		from := GetEmailById(db, t.From)
 		to := GetEmailById(db, t.To)
 		fmt.Printf("Data: %v - Valor: R$%.2f - De: %s - Para: %s\n", t.Date, t.Amount, from, to)
+	}
+}
+
+func DisplayCreditTransactions(db  *sql.DB, email string){
+	account, err := GetAccount(db, email)
+	if err != nil {
+		fmt.Println("ERRO GetAccount", err)
+		fmt.Println("Erro ao buscar transações de crédito")
+		return
+	}
+
+	transactions := account.Invoice.Transactions
+	if len(transactions) == 0 {
+		fmt.Println("Você não possui nenhuma transação no crédito até o momento")
+		return
+	}
+
+	for _, t := range transactions {
+		to := "GoApp"
+		fmt.Printf("Data: %v - Valor: R$%.2f - Para: %s\n", t.Date, t.Amount, to)
 	}
 }
 
@@ -152,6 +212,19 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 			if err != nil {
 				return "Erro ao realizar pagamento", false
 			}
+			_, err = db.Exec(`
+				INSERT INTO bank_transactions 
+				(account_id, from_user, to_name, amount, date)
+				VALUES (?, ?, ?, ?, ?)`,
+				account.Id,
+				account.AccountUser.Id,
+				"GoApp",
+				productPrice,
+				time.Now().Format("2006-01-02"))
+
+			if err != nil {
+				return "Erro ao registrar transferência", false
+			}
 			msg := fmt.Sprintf("Compra: %s no valor de: R$%.2f processada com sucesso", productTitle, productPrice)
 			return msg, true
 		case "c":
@@ -213,15 +286,15 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 				return "Erro ao realizar pagamento", false
 			}
 
-			to := "GoApp"
+			recipient := "GoApp"
 			amount := productPrice
 			date := time.Now().AddDate(0, 1, 0).Format("2006-01-02")
 			
 			_, err = db.Exec(`
 				INSERT INTO credit_transactions 
-				(account_id,to, amount, date, installments)
+				(account_id, recipient , amount, date, installments)
 				VALUES(?,?,?,?,?)
-			`, account.Id, to, amount, date, installments)
+			`, account.Id, recipient, amount, date, installments)
 			if err != nil {
 				return "Erro ao realizar pagamento", false
 			}

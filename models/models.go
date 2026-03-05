@@ -50,6 +50,7 @@ type CreditCard struct {
 type NormalTransaction struct {
 	From int
 	To int
+	ToName string
 	Amount float64
 	Date time.Time
 }

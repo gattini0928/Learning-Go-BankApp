@@ -44,6 +44,7 @@ func StartDB() *sql.DB {
 			account_id INTEGER,
 			from_user INTEGER,
 			to_user INTEGER,
+			to_name TEXT,
 			amount REAL,
 			date TEXT,
 			FOREIGN KEY (account_id) REFERENCES accounts(id)
@@ -52,7 +53,7 @@ func StartDB() *sql.DB {
 		CREATE TABLE IF NOT EXISTS credit_transactions (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			account_id INTEGER,
-			to TEXT,
+			recipient TEXT,
 			amount REAL,
 			date TEXT,
 			installments INTEGER,

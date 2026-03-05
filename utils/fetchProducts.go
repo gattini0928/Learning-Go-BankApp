@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"math/rand/v2"
-	"fmt"
 )
 
 func FetchProducts() ([]models.Product, error){
@@ -34,8 +33,6 @@ func FetchProducts() ([]models.Product, error){
 	if err != nil {
 		log.Fatalf("Erro ao decodificar JSON: %v", err)
 	}
-
-	fmt.Printf("Products: %v", products[:5])
 
 	return products, nil 
 }
