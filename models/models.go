@@ -52,7 +52,7 @@ type NormalTransaction struct {
 	To int
 	ToName string
 	Amount float64
-	Date time.Time
+	Date string
 }
 
 type BankTransactions struct {
