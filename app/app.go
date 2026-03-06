@@ -232,3 +232,4 @@ func bankManager(reader *bufio.Reader , db *sql.DB, account models.Account, logg
 		}
 	}
 }
+
