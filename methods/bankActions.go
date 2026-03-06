@@ -119,7 +119,36 @@ func DisplayTransactions(db  *sql.DB, email string){
 		return
 	}
 
-	transactions := account.Transactions.Transactions
+	rows, err := db.Query(`
+		SELECT from_user, to_user, amount, date
+		FROM bank_transactions
+		WHERE from_user = ? OR to_user = ?
+	`, account.AccountUser.Id, account.AccountUser.Id)
+
+	if err != nil {
+		fmt.Println("Erro ao buscar transações")
+		return
+	}
+	defer rows.Close()
+
+	var transactions []models.NormalTransaction
+
+	for rows.Next() {
+		var t models.NormalTransaction
+
+		err := rows.Scan(&t.From, &t.To, &t.Amount, &t.Date)
+		if err != nil {
+			fmt.Println("Erro ao ler transações")
+			return
+		}
+
+		transactions = append(transactions, t)
+	}
+	if err = rows.Err(); err != nil {
+		fmt.Println("Erro ao iterar transações")
+		return
+	}
+
 	if len(transactions) == 0 {
 		fmt.Println("Você não possui nenhuma transação bancária até o momento")
 		return
@@ -132,7 +161,8 @@ func DisplayTransactions(db  *sql.DB, email string){
 	}
 }
 
-func DisplayCreditTransactions(db  *sql.DB, email string){
+func DisplayCreditTransactions(db *sql.DB, email string) {
+
 	account, err := GetAccount(db, email)
 	if err != nil {
 		fmt.Println("ERRO GetAccount", err)
@@ -140,15 +170,44 @@ func DisplayCreditTransactions(db  *sql.DB, email string){
 		return
 	}
 
-	transactions := account.Invoice.Transactions
+	rows, err := db.Query(`
+		SELECT recipient, amount, date
+		FROM credit_transactions
+		WHERE account_id = ?
+	`, account.Id)
+
+	if err != nil {
+		fmt.Println("Erro ao buscar transações")
+		return
+	}
+	defer rows.Close()
+
+	var transactions []models.CreditCardTransaction
+
+	for rows.Next() {
+		var transaction models.CreditCardTransaction
+
+		err := rows.Scan(&transaction.To, &transaction.Amount, &transaction.Date)
+		if err != nil {
+			fmt.Println("Erro ao ler transações de crédito")
+			return
+		}
+
+		transactions = append(transactions, transaction)
+	}
+
+	if err = rows.Err(); err != nil {
+		fmt.Println("Erro ao iterar transações")
+		return
+	}
+
 	if len(transactions) == 0 {
 		fmt.Println("Você não possui nenhuma transação no crédito até o momento")
 		return
 	}
 
 	for _, t := range transactions {
-		to := "GoApp"
-		fmt.Printf("Data: %v - Valor: R$%.2f - Para: %s\n", t.Date, t.Amount, to)
+		fmt.Printf("Data: %v - Valor: R$%.2f - Para: %s\n", t.Date, t.Amount, t.To)
 	}
 }
 
