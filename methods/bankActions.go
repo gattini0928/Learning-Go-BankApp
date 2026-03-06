@@ -183,6 +183,12 @@ func PayInvoice(db *sql.DB, email string, a_password string) {
 		return
 	}
 
+	success := PaidInvoice(db, account)
+	if !success {
+		fmt.Println("Falha ao pagar fatura, tente novamente mais tarde.")
+		return
+	}
+
 	_, err = db.Exec(`
 		UPDATE credit_transactions
 		SET remaining_installments = remaining_installments - 1
@@ -194,11 +200,52 @@ func PayInvoice(db *sql.DB, email string, a_password string) {
 		return
 	}
 
-	success := PaidInvoice(db, account)
-	if !success {
-		fmt.Println("Falha ao pagar fatura, tente novamente mais tarde.")
+	rows, err := db.Query(`
+		SELECT amount, installments, remaining_installments
+		FROM credit_transactions
+		WHERE account_id = ? AND remaining_installments > 0
+	`, account.Id)
+
+	if err != nil {
+		fmt.Println("Erro ao buscar parcelas")
 		return
 	}
+	defer rows.Close()
+
+	var nextInvoiceTotal float64
+
+	for rows.Next() {
+
+		var amount float64
+		var installments int
+		var remaining int
+
+		err := rows.Scan(&amount, &installments, &remaining)
+		if err != nil {
+			fmt.Println("Erro ao ler parcelas")
+			return
+		}
+
+		installmentPrice := amount / float64(installments)
+
+		nextInvoiceTotal += installmentPrice
+	}
+	
+	if err = rows.Err(); err != nil {
+		fmt.Println("Erro ao iterar parcelas")
+		return
+	}
+
+	_, err = db.Exec(`
+		UPDATE accounts
+		SET invoice_total = ?
+		WHERE id = ?
+		`, nextInvoiceTotal, account.Id)
+
+		if err != nil {
+			fmt.Println("Erro ao atualizar próxima fatura")
+			return
+		}
 
 	fmt.Printf("Fatura com valor de: R$%.2f paga com sucesso!", account.Invoice.Total)
 }
@@ -266,19 +313,31 @@ func MakePurchase(db *sql.DB, reader *bufio.Reader ,email string, productTitle s
 
 			if cardName != account.CreditCard.HolderName || cardNumber != account.CreditCard.CardNumber || 
 			expiryDate != account.CreditCard.ExpiryDate ||
-			cvv != account.CreditCard.Cvv{
+			cvv != account.CreditCard.Cvv {
 				return "Dados do cartão inválidos", false
 			}
 			if installments > 12  || installments <= 0{
 				return "Número de parcelas inválidas (1x-12x)", false
 			}
 
-			expiry, err := time.Parse("2006-01-02", account.CreditCard.ExpiryDate)
+			parts := strings.Split(account.CreditCard.ExpiryDate, "/")
+			if len(parts) != 2 {
+				return "Erro ao processar data do cartão de crédito", false
+			}
+
+			month, err := strconv.Atoi(parts[0])
 			if err != nil {
 				return "Erro ao processar data do cartão de crédito", false
 			}
 
-			if time.Now().After(expiry) {
+			year, err := strconv.Atoi(parts[1])
+			if err != nil {
+				return "Erro ao processar data do cartão de crédito", false
+			}
+
+			expiry := time.Date(2000+year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+
+			if time.Now().After(expiry.AddDate(0, 1, 0)) {
 				return "A data de validade do seu cartão venceu", false
 			}
 

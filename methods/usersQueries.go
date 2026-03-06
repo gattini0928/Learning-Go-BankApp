@@ -18,7 +18,7 @@ func InsertUser(db *sql.DB, u models.User) int64 {
 		log.Fatal(err)
 	}
 	return id
-}
+};
 
 func InsertAccount(db *sql.DB, a models.Account) {
     userId := InsertUser(db, a.AccountUser)
