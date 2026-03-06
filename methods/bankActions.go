@@ -78,6 +78,7 @@ func NewTransfer(db *sql.DB, account models.Account, email string, amount string
 	if err != nil {
 		return "Erro ao procurar conta destinatária" ,false
 	}
+
 	_, err = tx.Exec(`
 		INSERT INTO bank_transactions 
 		(account_id, from_user, to_user, amount, date)
@@ -120,12 +121,13 @@ func DisplayTransactions(db  *sql.DB, email string){
 	}
 
 	rows, err := db.Query(`
-		SELECT from_user, to_user, amount, date
+		SELECT from_user, COALESCE(to_user, 0), amount, date
 		FROM bank_transactions
 		WHERE from_user = ? OR to_user = ?
 	`, account.AccountUser.Id, account.AccountUser.Id)
 
 	if err != nil {
+		fmt.Println(err)
 		fmt.Println("Erro ao buscar transações")
 		return
 	}
@@ -138,6 +140,7 @@ func DisplayTransactions(db  *sql.DB, email string){
 
 		err := rows.Scan(&t.From, &t.To, &t.Amount, &t.Date)
 		if err != nil {
+			fmt.Println(err)
 			fmt.Println("Erro ao ler transações")
 			return
 		}
@@ -145,6 +148,7 @@ func DisplayTransactions(db  *sql.DB, email string){
 		transactions = append(transactions, t)
 	}
 	if err = rows.Err(); err != nil {
+		fmt.Println(err)
 		fmt.Println("Erro ao iterar transações")
 		return
 	}
@@ -155,9 +159,18 @@ func DisplayTransactions(db  *sql.DB, email string){
 	}
 
 	for _, t := range transactions {
+
 		from := GetEmailById(db, t.From)
-		to := GetEmailById(db, t.To)
-		fmt.Printf("Data: %v - Valor: R$%.2f - De: %s - Para: %s\n", t.Date, t.Amount, from, to)
+
+		var to string
+		if t.To != 0 {
+			to = GetEmailById(db, t.To)
+		} else {
+			to = t.ToName
+		}
+
+		fmt.Printf("Data: %v - Valor: R$%.2f - De: %s - Para: %s\n",
+			t.Date, t.Amount, from, to)
 	}
 }
 
@@ -177,6 +190,7 @@ func DisplayCreditTransactions(db *sql.DB, email string) {
 	`, account.Id)
 
 	if err != nil {
+		fmt.Println(err)
 		fmt.Println("Erro ao buscar transações")
 		return
 	}
@@ -189,6 +203,7 @@ func DisplayCreditTransactions(db *sql.DB, email string) {
 
 		err := rows.Scan(&transaction.To, &transaction.Amount, &transaction.Date)
 		if err != nil {
+			fmt.Println(err)
 			fmt.Println("Erro ao ler transações de crédito")
 			return
 		}
@@ -197,6 +212,7 @@ func DisplayCreditTransactions(db *sql.DB, email string) {
 	}
 
 	if err = rows.Err(); err != nil {
+		fmt.Println(err)
 		fmt.Println("Erro ao iterar transações")
 		return
 	}
@@ -281,6 +297,7 @@ func PayInvoice(db *sql.DB, email string, a_password string) {
 
 		err := rows.Scan(&amount, &installments, &remaining)
 		if err != nil {
+			fmt.Println(err)
 			fmt.Println("Erro ao ler parcelas")
 			return
 		}
@@ -291,6 +308,7 @@ func PayInvoice(db *sql.DB, email string, a_password string) {
 	}
 	
 	if err = rows.Err(); err != nil {
+		fmt.Println(err)
 		fmt.Println("Erro ao iterar parcelas")
 		return
 	}
