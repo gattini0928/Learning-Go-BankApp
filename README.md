@@ -1,4 +1,4 @@
-# BankApp CLI
+# BankApp CLI - ![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 
 Projeto de aprendizado — uma CLI que simula operações bancárias: criação e login de contas, transferências, compras com débito e cartão de crédito (parceladas em até 12x), checagem de saldo, visualização de faturas e extrato de transferências.
 
